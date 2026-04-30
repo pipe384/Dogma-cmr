@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DOGMA CRM v41 Limpia</title>
+<style>
+:root{--bg:#0b0b0c;--card:#171719;--soft:#101012;--line:#2b2b31;--txt:#f7f4ee;--muted:#aaa;--gold:#d8a84f;--green:#4ade80;--red:#f87171;--blue:#60a5fa;--orange:#fb923c}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif}
+header{position:sticky;top:0;z-index:10;background:#0b0b0cf5;border-bottom:1px solid var(--line);padding:14px}
+.brand{color:var(--gold);letter-spacing:.22em;font-size:12px;text-transform:uppercase}.title{font-size:23px;font-weight:850;margin-top:3px}
+main{padding:12px;max-width:1180px;margin:0 auto 80px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.metric,.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:10px}.metric span{color:var(--muted);font-size:12px}.metric strong{display:block;font-size:20px}
+.sticky{position:sticky;top:82px;z-index:9;background:#0b0b0cf2;padding:8px 0 10px;border-bottom:1px solid var(--line)}
+.tabs{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:8px 0}
+button{border:1px solid var(--line);background:#222227;color:var(--txt);border-radius:12px;padding:9px;font-weight:750}button.active{background:var(--gold);color:#111}.danger{border-color:#743232}
+input,select,textarea{width:100%;background:var(--soft);color:var(--txt);border:1px solid var(--line);border-radius:12px;padding:10px;font-size:15px}textarea{min-height:180px;font-family:ui-monospace,Menlo,monospace;font-size:12px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.row>*{flex:auto}.section{display:none}.section.active{display:block}.muted{color:var(--muted);font-size:13px}
+.badge{display:inline-flex;border-radius:999px;padding:3px 8px;font-size:12px;font-weight:800;margin:2px;border:1px solid var(--line)}.green{background:#14391f;color:var(--green)}.red{background:#3a1717;color:var(--red)}.blue{background:#14243d;color:var(--blue)}.gold{background:var(--gold);color:#111}.orange{background:#3b2411;color:var(--orange)}
+.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}.actions button{flex:1;min-width:92px}table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}td,th{border-bottom:1px solid var(--line);padding:7px;text-align:left}th{color:var(--gold)}.scroll{overflow:auto}.zoneTitle{background:#101012;border:1px solid var(--line);border-radius:14px;padding:10px;margin:14px 0 8px;display:flex;justify-content:space-between}
+.editPanel{border:1px solid var(--gold);background:#11100d;border-radius:16px;padding:12px;margin:10px 0}.editGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.label{font-size:12px;color:var(--muted);margin:7px 0 3px}
+.preview{white-space:pre-wrap;background:#0d0d0f;border:1px solid var(--line);border-radius:16px;padding:12px;font-family:ui-monospace,Menlo,monospace;font-size:12px;max-height:480px;overflow:auto}
+@media(min-width:760px){.grid{grid-template-columns:repeat(4,1fr)}.editGrid{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+<header><div class="brand">DOGMA BARF</div><div class="title">CRM Operativo v41 Limpia</div><div class="muted">Versión reconstruida estable: clientes, ruta, cartera, edición, backup.</div></header>
+<main>
+<div class="sticky">
+ <section class="grid">
+  <div class="metric"><span>Clientes en ruta</span><strong id="mClients">0</strong></div>
+  <div class="metric"><span>Kg ruta</span><strong id="mKg">0 kg</strong></div>
+  <div class="metric"><span>Ingreso ruta</span><strong id="mIncome">$0</strong></div>
+  <div class="metric"><span>Cartera</span><strong id="mDebt">$0</strong></div>
+ </section>
+ <div class="tabs">
+  <button data-tab="clientes" class="active">Clientes</button><button data-tab="ruta">Ruta</button><button data-tab="copiar">Copiar</button><button data-tab="produccion">Producción</button><button data-tab="cartera">Cartera</button><button data-tab="historial">Historial</button><button data-tab="importar">Importar</button>
+ </div>
+ <div class="row">
+  <input id="search" placeholder="Buscar cliente, teléfono, dirección...">
+  <select id="zoneFilter"><option>Todas</option><option>Carro</option><option>Moto</option><option>Sabana</option></select>
+  <select id="statusFilter"><option>Todos activos</option><option>Toda la base</option><option>Activos</option><option>Inactivos</option><option>En ruta</option><option>Fuera de ruta</option><option>Con deuda</option><option>Al día</option></select>
+ </div>
+</div>
+
+<section id="clientes" class="section active">
+ <div class="row" style="margin:10px 0"><button id="newClient" class="active">+ Nuevo cliente</button><button id="selectVisible">Agregar visibles</button><button id="unselectVisible">Sacar visibles</button><button id="renumber">Reordenar</button></div>
+ <div id="editMount"></div>
+ <div id="clientList"></div>
+</section>
+
+<section id="ruta" class="section"><div class="card"><b>Ruta activa</b><div class="muted">Se muestran clientes en ruta, respetando filtros.</div></div><div id="routeList"></div></section>
+
+<section id="copiar">
+ <div class="card"><h3>Copiar / Guardar</h3><div class="row"><input id="routeTitle" placeholder="RUTA MIÉRCOLES"><button id="copyRoute" class="active">Copiar ruta</button><button id="saveRoute">Guardar ruta / causar cartera</button><button id="copyBase">Copiar base</button></div></div><div id="routePreview" class="preview"></div>
+</section>
+
+<section id="produccion"><div class="card"><h3>Producción</h3><div id="production"></div></div></section>
+
+<section id="cartera"><div class="card"><h3>Cartera</h3><div id="wallet"></div></div></section>
+
+<section id="historial"><div class="card"><h3>Historial</h3><div id="history"></div></div></section>
+
+<section id="importar">
+ <div class="card"><h3>Importar base</h3><textarea id="rawInput" placeholder="Pega ruta/base aquí..."></textarea><div class="actions"><button id="importRaw" class="active">Importar base</button><button id="backup">Backup completo</button><button id="exportTxt">Descargar base TXT</button><button id="exportCsv">Descargar CSV</button></div></div>
+ <div class="card"><h3>Restaurar backup</h3><textarea id="backupInput" placeholder="Pega JSON del backup"></textarea><div class="actions"><button id="restore">Restaurar backup</button></div></div>
+</section>
+</main>
+
+<script>
+const LS_CLIENTS='dogma_clients', LS_HISTORY='dogma_route_history';
+const zones=['Carro','Moto','Sabana']; const priority={Carro:1,Moto:2,Sabana:3};
+let clients=safeParse(localStorage.getItem(LS_CLIENTS),[]);
+let routeHistory=safeParse(localStorage.getItem(LS_HISTORY),[]);
+let editingUid=null;
+
+function safeParse(s,f){try{return JSON.parse(s)||f}catch(e){return f}}
+function uid(){return 'd_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,9)}
+function money(n){return new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0}).format(Number(n)||0)}
+function kg(items){return (items||[]).reduce((s,i)=>s+(+i.bags||0)*(+i.grams||0)/1000,0)}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function normMoney(s){return Number(String(s||'').replace(/[^\d]/g,''))||0}
+function save(){localStorage.setItem(LS_CLIENTS,JSON.stringify(clients))}
+function saveH(){localStorage.setItem(LS_HISTORY,JSON.stringify(routeHistory))}
+function normalize(c,i=0){let items=Array.isArray(c.items)?c.items:[];let k=kg(items);let price=Number(c.pricePerKg)|| (k&&c.charged?Math.round(c.charged/k):10000);return {uid:c.uid||uid(),id:c.id||Date.now()+i,client:c.client||c.name||'Cliente',phone:c.phone||'',address:c.address||'',complexName:c.complexName||'',towerApt:c.towerApt||'',observations:c.observations||c.note||'',note:c.note||c.observations||'',zone:zones.includes(c.zone)?c.zone:'Carro',status:c.status||'Activo',activeWeek:!!c.activeWeek,routeOrder:Number(c.routeOrder)||9999,items:items.length?items:[{bags:1,grams:500}],charged:Number(c.charged)||Math.round(k*price),pricePerKg:price,balance:Number(c.balance)||0,ledgerCharges:Number(c.ledgerCharges)||0,payments:Array.isArray(c.payments)?c.payments:[],manualDebts:Array.isArray(c.manualDebts)?c.manualDebts:[],adjustments:Array.isArray(c.adjustments)?c.adjustments:[],routeCharges:Array.isArray(c.routeCharges)?c.routeCharges:[],chargedRouteKeys:Array.isArray(c.chargedRouteKeys)?c.chargedRouteKeys:[],debtNote:c.debtNote||''}}
+function init(){const seen=new Set();clients=clients.map((c,i)=>{c=normalize(c,i); if(seen.has(c.uid)) c.uid=uid(); seen.add(c.uid); return c}); save()}
+function priceKg(c){return Number(c.pricePerKg)||10000}
+function recalc(c){c.charged=Math.round(kg(c.items)*priceKg(c)); return c}
+function routeTitle(){return document.getElementById('routeTitle').value||todayTitle()}
+function todayTitle(){let d=new Date();return `RUTA ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`}
+function wedKey(d=new Date()){d=new Date(d);let diff=(d.getDay()-3+7)%7;d.setDate(d.getDate()-diff);d.setHours(0,0,0,0);return d.toISOString().slice(0,10)}
+function lastWeeks(n=4){let s=new Date(wedKey());let arr=[];for(let i=0;i<n;i++){let d=new Date(s);d.setDate(s.getDate()-7*i);arr.push(d.toISOString().slice(0,10))}return arr}
+function fmtWeek(k){return new Date(k+'T00:00:00').toLocaleDateString('es-CO',{day:'2-digit',month:'short'})}
+function sortRoute(a,b){return (priority[a.zone]||9)-(priority[b.zone]||9)||(+a.routeOrder||9999)-(+b.routeOrder||9999)||a.client.localeCompare(b.client)}
+function canonical(){let ordered=clients.filter(c=>c.activeWeek).sort(sortRoute);clients=clients.map(c=>{let i=ordered.findIndex(x=>x.uid===c.uid);return i>=0?{...c,routeOrder:i+1}:c})}
+function filtered(list=clients){let q=document.getElementById('search')?.value.toLowerCase()||'', z=document.getElementById('zoneFilter')?.value||'Todas', st=document.getElementById('statusFilter')?.value||'Todos activos';return list.filter(c=>{let text=JSON.stringify(c).toLowerCase().includes(q);let zone=z==='Todas'||c.zone===z;if(!text||!zone)return false;if(st==='Toda la base')return true;if(st==='Todos activos'||st==='Activos')return c.status!=='Inactivo';if(st==='Inactivos')return c.status==='Inactivo';if(st==='En ruta')return c.activeWeek;if(st==='Fuera de ruta')return !c.activeWeek&&c.status!=='Inactivo';if(st==='Con deuda')return c.balance>0;if(st==='Al día')return c.balance<=0;return true}).sort(sortRoute)}
+function weekly(){return clients.filter(c=>c.activeWeek).sort(sortRoute)}
+
+function render(){canonical();let w=weekly(), totalDebt=clients.reduce((s,c)=>s+c.balance,0);document.getElementById('mClients').textContent=w.length;document.getElementById('mKg').textContent=w.reduce((s,c)=>s+kg(c.items),0).toFixed(1)+' kg';document.getElementById('mIncome').textContent=money(w.reduce((s,c)=>s+c.charged,0));document.getElementById('mDebt').textContent=money(totalDebt);renderEdit();renderClients();renderRoute();renderCopy();renderProd();renderWallet();renderHistory()}
+function renderClients(){document.getElementById('clientList').innerHTML=filtered().map(card).join('')||'<div class="card muted">No hay clientes.</div>'}
+function badges(c){return `${c.status==='Inactivo'?'<span class="badge red">Inactivo</span>':c.activeWeek?'<span class="badge green">En ruta</span>':'<span class="badge red">Fuera de ruta</span>'}${c.balance>0?'<span class="badge red">Debe</span>':'<span class="badge green">Al día</span>'}<span class="badge blue">${c.zone}</span><span class="badge gold">Orden ${c.routeOrder||0}</span>`}
+function card(c){return `<div class="card client"><div class="row"><h3>${esc(c.client)}</h3>${badges(c)}</div><div class="muted">${esc(c.phone)} · ${esc(c.address)}</div>${c.complexName?`<div class="muted">${esc(c.complexName)}</div>`:''}${c.towerApt?`<div class="muted">${esc(c.towerApt)}</div>`:''}${c.observations?`<span class="badge gold">${esc(c.observations)}</span>`:''}<table><tr><th>Pedido</th><th>Kg</th><th>Valor</th><th>$/kg</th><th>Saldo</th></tr><tr><td>${itemText(c)}</td><td>${kg(c.items).toFixed(1)}</td><td>${money(c.charged)}</td><td>${money(priceKg(c))}</td><td>${money(c.balance)}</td></tr></table><div class="actions"><button data-act="toggle-route" data-uid="${c.uid}">${c.activeWeek?'Sacar':'Agregar'}</button><button data-act="edit" data-uid="${c.uid}" class="${editingUid===c.uid?'active':''}">Editar</button><button data-act="pay" data-uid="${c.uid}">+ Pago</button><button data-act="debt" data-uid="${c.uid}">+ Deuda</button><button data-act="adjust" data-uid="${c.uid}">Ajustar saldo</button><button data-act="inactive" data-uid="${c.uid}">${c.status==='Inactivo'?'Reactivar':'Inactivar'}</button></div></div>`}
+function itemText(c){return (c.items||[]).map(i=>`${i.bags} x ${i.grams}g`).join(' + ')}
+function renderEdit(){let mount=document.getElementById('editMount');let c=clients.find(x=>x.uid===editingUid);if(!c){mount.innerHTML='';return}mount.innerHTML=`<div class="editPanel"><h3>Editando: ${esc(c.client)}</h3><div class="editGrid"><div><div class="label">Nombre cliente</div><input data-field="client" value="${esc(c.client)}"></div><div><div class="label">Teléfono</div><input data-field="phone" value="${esc(c.phone)}"></div><div><div class="label">Zona</div><select data-field="zone">${zones.map(z=>`<option ${z===c.zone?'selected':''}>${z}</option>`).join('')}</select></div><div><div class="label">Orden ruta</div><input data-field="routeOrder" inputmode="numeric" value="${c.routeOrder||''}"></div></div><div class="label">Dirección</div><input data-field="address" value="${esc(c.address)}"><div class="editGrid"><div><div class="label">Conjunto / edificio</div><input data-field="complexName" value="${esc(c.complexName)}"></div><div><div class="label">Torre / Apto / Casa</div><input data-field="towerApt" value="${esc(c.towerApt)}"></div></div><div class="label">Observaciones</div><input data-field="observations" value="${esc(c.observations)}"><div class="editGrid"><div><div class="label">Precio/kg</div><input data-field="pricePerKg" inputmode="numeric" value="${priceKg(c)}"></div><div><div class="label">Valor ruta</div><input data-field="charged" inputmode="numeric" value="${c.charged}"></div><div><div class="label">Saldo cartera</div><input data-field="balance" inputmode="numeric" value="${c.balance}"></div><div><div class="label">Estado</div><select data-field="status"><option ${c.status==='Activo'?'selected':''}>Activo</option><option ${c.status==='Inactivo'?'selected':''}>Inactivo</option></select></div></div><div class="label">Pedido</div>${c.items.map((it,i)=>`<div class="row"><input data-item="${i}" data-ifield="bags" inputmode="numeric" value="${it.bags}"><input data-item="${i}" data-ifield="grams" inputmode="numeric" value="${it.grams}"><button data-act="del-item" data-idx="${i}">X</button></div>`).join('')}<div class="actions"><button data-act="add-item">+ Presentación</button><button data-act="std-price">A $10.000/kg</button><button data-act="close-edit" class="active">Guardar y cerrar</button></div></div>`}
+
+function renderRoute(){let list=filtered(weekly());let html='';zones.forEach(z=>{let g=list.filter(c=>c.zone===z);if(!g.length)return;html+=`<div class="zoneTitle"><b>${z}</b><span>${g.length} clientes · ${g.reduce((s,c)=>s+kg(c.items),0).toFixed(1)} kg · ${money(g.reduce((s,c)=>s+c.charged,0))}</span></div>`+g.map(card).join('')});document.getElementById('routeList').innerHTML=html||'<div class="card muted">No hay ruta para este filtro.</div>'}
+function routeText(){let txt=routeTitle()+'\n\n';zones.forEach(z=>{let g=weekly().filter(c=>c.zone===z);if(!g.length)return;txt+=`*${z.toUpperCase()}*\n\n`;g.forEach(c=>{txt+=`✅ ${c.client}${c.phone?' - '+c.phone:''}\n${c.address?c.address+'\n':''}${c.complexName?c.complexName+'\n':''}${c.towerApt?c.towerApt+'\n':''}${c.observations?'Obs: '+c.observations+'\n':''}`;(c.items||[]).forEach(i=>txt+=`${i.bags} bolsas de ${i.grams} gr de BARF\n`);txt+=`${money(c.charged).replace(/\s/g,'')}\n\n`})});return txt.trim()}
+function renderCopy(){document.getElementById('routePreview').textContent=routeText()}
+function renderProd(){let w=weekly(), by={};w.forEach(c=>(c.items||[]).forEach(i=>{by[i.grams]=by[i.grams]||{b:0,k:0};by[i.grams].b+=+i.bags||0;by[i.grams].k+=(+i.bags||0)*(+i.grams||0)/1000}));document.getElementById('production').innerHTML=`<table><tr><th>Presentación</th><th>Bolsas</th><th>Kg</th></tr>${Object.keys(by).sort((a,b)=>a-b).map(g=>`<tr><td>${g}g</td><td>${by[g].b}</td><td>${by[g].k.toFixed(1)}</td></tr>`).join('')||'<tr><td colspan="3">Sin datos</td></tr>'}</table>`}
+function weeklyMap(c){let weeks=lastWeeks(), map={};weeks.forEach(w=>map[w]=0);(c.routeCharges||[]).forEach(ch=>{let k=ch.weekKey||wedKey(ch.date);if(map[k]!=null)map[k]+=+ch.amount||0});return {weeks,map}}
+function renderWallet(){let debtors=clients.filter(c=>c.balance>0).sort((a,b)=>b.balance-a.balance), total=debtors.reduce((s,c)=>s+c.balance,0);let weeks=lastWeeks();document.getElementById('wallet').innerHTML=`<div class="grid"><div class="metric"><span>Total cartera</span><strong>${money(total)}</strong></div><div class="metric"><span>Clientes con deuda</span><strong>${debtors.length}</strong></div></div><div class="scroll"><table><tr><th>Cliente</th><th>Teléfono</th>${weeks.map(w=>`<th>${fmtWeek(w)}</th>`).join('')}<th>Vendido</th><th>Pagado</th><th>Saldo</th><th>Acción</th></tr>${debtors.map(c=>{let wm=weeklyMap(c);let paid=c.payments.reduce((s,p)=>s+(+p.amount||0),0);return `<tr><td>${esc(c.client)}</td><td>${esc(c.phone)}</td>${weeks.map(w=>`<td>${money(wm.map[w]||0)}</td>`).join('')}<td>${money(c.ledgerCharges)}</td><td>${money(paid)}</td><td><b>${money(c.balance)}</b></td><td><button data-act="edit" data-uid="${c.uid}">Editar</button></td></tr>`}).join('')||'<tr><td colspan="9">Sin cartera</td></tr>'}</table></div>`}
+function renderHistory(){document.getElementById('history').innerHTML=routeHistory.map(r=>`<div class="card"><b>${esc(r.title)}</b><div class="muted">${new Date(r.createdAt).toLocaleString('es-CO')} · ${r.count||0} clientes · ${money(r.totalIncome)}</div><div class="actions"><button data-act="load-route" data-id="${r.id}">Cargar</button><button data-act="copy-hist" data-id="${r.id}">Copiar</button></div></div>`).join('')||'<div class="card muted">Sin historial.</div>'}
+
+function setClient(uidv,fn){clients=clients.map(c=>c.uid===uidv?fn({...c}):c);save();render()}
+function addClient(){let c=normalize({client:'Nuevo cliente',uid:uid(),status:'Activo',zone:'Carro',items:[{bags:1,grams:500}],pricePerKg:10000,charged:5000});clients.push(c);editingUid=c.uid;save();render()}
+function pay(uidv){let c=clients.find(x=>x.uid===uidv);let v=normMoney(prompt('Monto pagado:', c?.balance||''));if(!v)return;setClient(uidv,c=>{c.payments.push({date:new Date().toISOString(),amount:v});c.balance=Math.max(0,c.balance-v);return c})}
+function debt(uidv){let v=normMoney(prompt('Deuda externa/anterior:',''));if(!v)return;let note=prompt('Concepto:','Cartera anterior')||'Cartera anterior';setClient(uidv,c=>{c.manualDebts.push({date:new Date().toISOString(),weekKey:wedKey(),amount:v,note});c.ledgerCharges+=v;c.balance+=v;return c})}
+function adjust(uidv){let c=clients.find(x=>x.uid===uidv);let nb=normMoney(prompt('Saldo correcto:',c?.balance||0));if(nb<0)return;setClient(uidv,c=>{let diff=nb-c.balance;c.adjustments.push({date:new Date().toISOString(),weekKey:wedKey(),amount:diff,reason:'Ajuste saldo'});c.ledgerCharges+=diff;c.balance=nb;return c})}
+async function copy(txt,msg){try{await navigator.clipboard.writeText(txt)}catch(e){let a=document.createElement('textarea');a.value=txt;document.body.appendChild(a);a.select();document.execCommand('copy');a.remove()}alert(msg)}
+function baseText(){return clients.map(c=>`${c.status==='Inactivo'?'⚫':'✅'} ${c.client} - ${c.phone}\n${c.address}\n${c.complexName}\n${c.towerApt}\nObs: ${c.observations}\nZona: ${c.zone}\nSaldo: ${money(c.balance)}\n`).join('\n')}
+function backup(){download(JSON.stringify({version:'v41',clients,routeHistory},null,2),'dogma_backup_completo.json','application/json')}
+function download(content,name,type='text/plain'){let b=new Blob([content],{type}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click()}
+function importRaw(){let raw=document.getElementById('rawInput').value.trim();if(!raw)return;let blocks=[],cur=[],zone='Carro',inactive=false;raw.split(/\n/).forEach(line=>{let l=line.toLowerCase();if(l.includes('clientes inactivos'))inactive=true;if(l.includes('sabana')||l.includes('chia')||l.includes('cajica')||l.includes('cota')||l.includes('zipa'))zone='Sabana';else if(l.includes('moto')||l.includes('zona sur'))zone='Moto';else if(l.includes('bogota')||l.includes('bogotá'))zone='Carro';if(line.trim().startsWith('✅')){if(cur.length)blocks.push({text:cur.join('\n'),zone,inactive});cur=[line]}else if(cur.length)cur.push(line)});if(cur.length)blocks.push({text:cur.join('\n'),zone,inactive});clients=blocks.map((b,i)=>{let first=b.text.split('\n')[0].replace(/✅️?|✅/g,'').trim(), parts=first.split(/\s+-\s+/), client=parts[0]||'Cliente', phone=((parts[1]||'').match(/(\+?\d[\d\s()\-]{6,})/)||[''])[0].replace(/[^\d+]/g,''), charged=normMoney((b.text.match(/\$\s*[\d.]+/)||[''])[0]), items=[],m,re=/(\d+)\s*bolsas?\s*(?:de\s*)?(?:de\s*)?(\d+)\s*(?:gr|g)/gi;while((m=re.exec(b.text)))items.push({bags:+m[1],grams:+m[2]});let address=b.text.split('\n').slice(1).filter(x=>!x.includes('bolsas')&&!x.includes('$')&&!x.includes('BARF')).map(x=>x.replace(/\*/g,'').trim()).filter(Boolean).join(', ');let k=kg(items), price=k&&charged?Math.round(charged/k):10000;return normalize({uid:uid(),client,phone,address,zone:b.zone,status:b.inactive?'Inactivo':'Activo',activeWeek:!b.inactive,items,charged,pricePerKg:price,routeOrder:i+1})});save();render()}
+function saveRoute(){let title=routeTitle(), now=new Date().toISOString(), wk=wedKey(now), w=weekly();if(!w.length)return alert('No hay clientes en ruta');routeHistory.unshift({id:Date.now(),title,createdAt:now,count:w.length,totalIncome:w.reduce((s,c)=>s+c.charged,0),text:routeText(),clients:JSON.parse(JSON.stringify(w))});clients=clients.map(c=>{if(!c.activeWeek)return c;if(c.chargedRouteKeys.includes(title))return c;return {...c,ledgerCharges:c.ledgerCharges+c.charged,balance:c.balance+c.charged,routeCharges:[...c.routeCharges,{date:now,weekKey:wk,amount:c.charged,title}],chargedRouteKeys:[...c.chargedRouteKeys,title]}});save();saveH();render();alert('Ruta guardada y cartera causada')}
+function loadRoute(id){let r=routeHistory.find(x=>String(x.id)===String(id));if(!r)return;clients=clients.map(c=>({...c,activeWeek:false}));(r.clients||[]).forEach(sc=>{let i=clients.findIndex(c=>c.uid&&sc.uid?c.uid===sc.uid:c.client===sc.client&&c.phone===sc.phone);if(i>=0)clients[i]={...clients[i],activeWeek:true,items:sc.items,charged:sc.charged,zone:sc.zone,routeOrder:sc.routeOrder}});save();render()}
+
+document.addEventListener('click',e=>{let b=e.target.closest('button');if(!b)return;let act=b.dataset.act, u=b.dataset.uid;if(b.dataset.tab){document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));document.getElementById(b.dataset.tab).classList.add('active');b.classList.add('active');render();return}if(act==='edit'){editingUid=u;render();return}if(act==='toggle-route')setClient(u,c=>{c.activeWeek=!c.activeWeek;return c});if(act==='pay')pay(u);if(act==='debt')debt(u);if(act==='adjust')adjust(u);if(act==='inactive')setClient(u,c=>{c.status=c.status==='Inactivo'?'Activo':'Inactivo';if(c.status==='Inactivo')c.activeWeek=false;return c});if(act==='add-item')setClient(editingUid,c=>{c.items.push({bags:1,grams:500});return recalc(c)});if(act==='del-item')setClient(editingUid,c=>{c.items.splice(+b.dataset.idx,1);return recalc(c)});if(act==='std-price')setClient(editingUid,c=>{c.pricePerKg=10000;return recalc(c)});if(act==='close-edit'){editingUid=null;save();render()}if(act==='load-route')loadRoute(b.dataset.id);if(act==='copy-hist'){let r=routeHistory.find(x=>String(x.id)===String(b.dataset.id));if(r)copy(r.text,'Ruta copiada')}})
+document.addEventListener('change',e=>{let el=e.target;if(el.id==='search'||el.id==='zoneFilter'||el.id==='statusFilter'){render();return}if(editingUid&&el.dataset.field){setClient(editingUid,c=>{let f=el.dataset.field,v=el.value;if(['routeOrder','pricePerKg','charged','balance'].includes(f))v=normMoney(v);c[f]=v;if(f==='pricePerKg')recalc(c);if(f==='charged'&&kg(c.items))c.pricePerKg=Math.round(c.charged/kg(c.items));return c})}if(editingUid&&el.dataset.item){setClient(editingUid,c=>{c.items[+el.dataset.item][el.dataset.ifield]=normMoney(el.value);return recalc(c)})}})
+document.getElementById('search').addEventListener('input',render);document.getElementById('zoneFilter').addEventListener('change',render);document.getElementById('statusFilter').addEventListener('change',render)
+document.getElementById('newClient').onclick=addClient;document.getElementById('selectVisible').onclick=()=>{let ids=filtered().map(c=>c.uid);clients=clients.map(c=>ids.includes(c.uid)&&c.status!=='Inactivo'?{...c,activeWeek:true}:c);save();render()};document.getElementById('unselectVisible').onclick=()=>{let ids=filtered().map(c=>c.uid);clients=clients.map(c=>ids.includes(c.uid)?{...c,activeWeek:false}:c);save();render()};document.getElementById('renumber').onclick=()=>{canonical();save();render()};document.getElementById('copyRoute').onclick=()=>copy(routeText(),'Ruta copiada');document.getElementById('saveRoute').onclick=saveRoute;document.getElementById('copyBase').onclick=()=>copy(baseText(),'Base copiada');document.getElementById('backup').onclick=backup;document.getElementById('exportTxt').onclick=()=>download(baseText(),'DOGMA_base_clientes.txt');document.getElementById('exportCsv').onclick=()=>download(clients.map(c=>[c.client,c.phone,c.address,c.complexName,c.towerApt,c.zone,c.status,c.balance].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n'),'DOGMA_base_clientes.csv','text/csv');document.getElementById('importRaw').onclick=importRaw;document.getElementById('restore').onclick=()=>{let o=safeParse(document.getElementById('backupInput').value,null);if(!o||!o.clients)return alert('Backup inválido');clients=o.clients.map(normalize);routeHistory=o.routeHistory||[];save();saveH();render()}
+init();render();
+</script>
+</body></html>
